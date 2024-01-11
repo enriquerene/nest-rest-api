@@ -1,0 +1,1 @@
+// Testes básicos para profile.controller.spec.ts

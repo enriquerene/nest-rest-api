@@ -1,0 +1,1 @@
+// Testes básicos para profile.module.spec.ts
