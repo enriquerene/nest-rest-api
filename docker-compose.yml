@@ -11,7 +11,7 @@ services:
       - db
     environment:
       - DB_HOST=db
-      - ENV=prod
+      - ENV=dev
   db:
     image: mysql:8.2
     environment:

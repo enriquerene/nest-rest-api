@@ -1,13 +1,30 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Inject } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { LoggerService } from 'src/logger/logger.service';
+import { UserRequestDto } from './dto/user-request.dto';
+import { UserResponseDto } from './dto/user-response.dto';
 
 @Controller('user')
 export class UserController {
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    @Inject(LoggerService) private logger: LoggerService,
+  ) {
+    this.logger.setContext(UserController.name);
+  }
 
-  @Post()
-  async createUser(@Body() createUserDto: CreateUserDto) {
-    return this.userService.createUser(createUserDto);
+  @Post() async createUser(@Body() userRequestDto: UserRequestDto) {
+    this.logger.log('{/user, POST} calls createUser');
+    const response = this.userService.createUser(userRequestDto);
+    this.logger.debug(`Controller response: ${JSON.stringify(response)}`);
+    return response;
+  }
+
+  @Post('login') async login(@Body() loginUserDto: UserRequestDto) {
+    this.logger.log('{/user/login, POST} calls login');
+    const response: Promise<UserResponseDto> =
+      this.userService.login(loginUserDto);
+    this.logger.debug(`Controller response: ${JSON.stringify(response)}`);
+    return response;
   }
 }

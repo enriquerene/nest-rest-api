@@ -4,6 +4,8 @@ import { AppService } from './app.service';
 import { User } from './user/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
+import { LoggerService } from './logger/logger.service';
+import { isDevEnv } from './utils/environment.util';
 
 @Module({
   imports: [
@@ -16,11 +18,11 @@ import { UserModule } from './user/user.module';
       password: 'pass',
       database: 'dcblog',
       entities: [User],
-      synchronize: process.env.ENV !== 'prod',
+      synchronize: isDevEnv(),
     }),
     UserModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, LoggerService],
 })
 export class AppModule {}

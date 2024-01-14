@@ -5,41 +5,43 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
+import { isDevEnv } from 'src/utils/environment.util';
+import { LoggerService } from 'src/logger/logger.service';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
-  isProdEnv = () => process.env.ENV === 'prod';
+  private readonly logger = new LoggerService(HttpExceptionFilter.name);
 
   catch(exception: unknown, host: ArgumentsHost) {
+    this.logger.fatal(`HttpExceptionFilter catches an exception.`);
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
     const request = ctx.getRequest();
+
     const status =
-      exception instanceof HttpException && !this.isProdEnv()
+      exception instanceof HttpException && isDevEnv()
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
+    this.logger.debug(`status: ${status}`);
 
     const message =
-      exception instanceof HttpException && !this.isProdEnv()
-        ? exception.getResponse()
+      exception instanceof HttpException && isDevEnv()
+        ? exception.getResponse().toString()
         : 'Internal server error';
+    this.logger.debug(`message: ${message}`);
 
-    if (this.isProdEnv()) {
-      response.status(status).json({
-        statusCode: status,
-        timestamp: new Date().toISOString(),
-        path: request.url,
-        message: message,
-      });
-    }
-
-    const stack = exception instanceof Error ? exception.stack : undefined;
-    response.status(status).json({
+    let jsonBody = {
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,
       message: message,
-      ...(stack && { stack }),
-    });
+    };
+    if (isDevEnv()) {
+      const stack = exception instanceof Error ? exception.stack : undefined;
+      jsonBody = { ...jsonBody, ...(stack && { stack }) };
+    }
+
+    this.logger.debug(`response returning JSON: ${JSON.stringify(jsonBody)}`);
+    response.status(status).json(jsonBody);
   }
 }
