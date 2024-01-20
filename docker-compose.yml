@@ -11,6 +11,10 @@ services:
       - db
     environment:
       - DB_HOST=db
+      - DB_USER=dcblog
+      - DB_PASS=pass
+      - DB_NAME=dcblog
+      - JWT_SECRET=jwt_secret
       - ENV=dev
   db:
     image: mysql:8.2

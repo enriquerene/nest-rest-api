@@ -4,13 +4,18 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
+  Inject,
+  Injectable,
 } from '@nestjs/common';
 import { isDevEnv } from 'src/utils/environment.util';
 import { LoggerService } from 'src/logger/logger.service';
 
 @Catch()
+@Injectable()
 export class HttpExceptionFilter implements ExceptionFilter {
-  private readonly logger = new LoggerService(HttpExceptionFilter.name);
+  constructor(@Inject(LoggerService) private logger: LoggerService) {
+    this.logger.setContext(HttpExceptionFilter.name);
+  }
 
   catch(exception: unknown, host: ArgumentsHost) {
     this.logger.fatal(`HttpExceptionFilter catches an exception.`);
